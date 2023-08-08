@@ -1,3 +1,5 @@
+; E-STEPS PER MM: 138.756
+
 ; Ender 3 Custom Start G-code
 G92 E0 ; Reset Extruder
 
