@@ -57,6 +57,23 @@
 #define E3_DIAG_PIN                         PG15  // E3DET
 
 //
+// Check for additional used endstop pins
+//
+#if HAS_EXTRA_ENDSTOPS
+  #define _ENDSTOP_IS_ANY(ES) X2_USE_ENDSTOP == ES || Y2_USE_ENDSTOP == ES || Z2_USE_ENDSTOP == ES || Z3_USE_ENDSTOP == ES || Z4_USE_ENDSTOP == ES
+  #if _ENDSTOP_IS_ANY(_XMIN_) || _ENDSTOP_IS_ANY(_XMAX_)
+    #define NEEDS_X_MINMAX
+  #endif
+  #if _ENDSTOP_IS_ANY(_YMIN_) || _ENDSTOP_IS_ANY(_YMAX_)
+    #define NEEDS_Y_MINMAX
+  #endif
+  #if _ENDSTOP_IS_ANY(_ZMIN_) || _ENDSTOP_IS_ANY(_ZMAX_)
+    #define NEEDS_Z_MINMAX
+  #endif
+  #undef _ENDSTOP_IS_ANY
+#endif
+
+//
 // Limit Switches
 //
 #ifdef X_STALL_SENSITIVITY
@@ -66,7 +83,7 @@
   #else
     #define X_MIN_PIN                E0_DIAG_PIN  // E0DET
   #endif
-#elif NEEDS_X_MINMAX
+#elif ANY(DUAL_X_CARRIAGE, NEEDS_X_MINMAX)
   #ifndef X_MIN_PIN
     #define X_MIN_PIN                 X_DIAG_PIN  // X-STOP
   #endif
@@ -84,7 +101,7 @@
   #else
     #define Y_MIN_PIN                E1_DIAG_PIN  // E1DET
   #endif
-#elif NEEDS_Y_MINMAX
+#elif ENABLED(NEEDS_Y_MINMAX)
   #ifndef Y_MIN_PIN
     #define Y_MIN_PIN                 Y_DIAG_PIN  // Y-STOP
   #endif
@@ -102,7 +119,7 @@
   #else
     #define Z_MIN_PIN                E2_DIAG_PIN  // PWRDET
   #endif
-#elif NEEDS_Z_MINMAX
+#elif ENABLED(NEEDS_Z_MINMAX)
   #ifndef Z_MIN_PIN
     #define Z_MIN_PIN                 Z_DIAG_PIN  // Z-STOP
   #endif
@@ -118,6 +135,13 @@
 //
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PB7
+#endif
+
+//
+// Probe enable
+//
+#if ENABLED(PROBE_ENABLE_DISABLE) && !defined(PROBE_ENABLE_PIN)
+  #define PROBE_ENABLE_PIN            SERVO0_PIN
 #endif
 
 //
@@ -275,28 +299,13 @@
   //#define E4_HARDWARE_SERIAL Serial1
 
   #define X_SERIAL_TX_PIN                   PC4
-  #define X_SERIAL_RX_PIN        X_SERIAL_TX_PIN
-
   #define Y_SERIAL_TX_PIN                   PD11
-  #define Y_SERIAL_RX_PIN        Y_SERIAL_TX_PIN
-
   #define Z_SERIAL_TX_PIN                   PC6
-  #define Z_SERIAL_RX_PIN        Z_SERIAL_TX_PIN
-
   #define Z2_SERIAL_TX_PIN                  PC7
-  #define Z2_SERIAL_RX_PIN      Z2_SERIAL_TX_PIN
-
   #define E0_SERIAL_TX_PIN                  PF2
-  #define E0_SERIAL_RX_PIN      E0_SERIAL_TX_PIN
-
   #define E1_SERIAL_TX_PIN                  PE4
-  #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
-
   #define E2_SERIAL_TX_PIN                  PE1
-  #define E2_SERIAL_RX_PIN      E2_SERIAL_TX_PIN
-
   #define E3_SERIAL_TX_PIN                  PD3
-  #define E3_SERIAL_RX_PIN      E3_SERIAL_TX_PIN
 
   // Reduce baud rate to improve software serial reliability
   #ifndef TMC_BAUD_RATE
@@ -377,7 +386,6 @@
   #define E4_CS_PIN                  EXP1_06_PIN
   #if HAS_TMC_UART
     #define E4_SERIAL_TX_PIN         EXP1_06_PIN
-    #define E4_SERIAL_RX_PIN    E4_SERIAL_TX_PIN
   #endif
 
   // M2 on Driver Expansion Module
@@ -388,7 +396,6 @@
   #define E5_CS_PIN                  EXP1_04_PIN
   #if HAS_TMC_UART
     #define E5_SERIAL_TX_PIN         EXP1_04_PIN
-    #define E5_SERIAL_RX_PIN    E5_SERIAL_TX_PIN
   #endif
 
   // M3 on Driver Expansion Module
@@ -399,14 +406,14 @@
   #define E6_CS_PIN                  EXP1_02_PIN
   #if HAS_TMC_UART
     #define E6_SERIAL_TX_PIN         EXP1_02_PIN
-    #define E6_SERIAL_RX_PIN    E6_SERIAL_TX_PIN
   #endif
 
 #endif // BTT_MOTOR_EXPANSION
 
 //
-// LCDs and Controllers
+// LCD / Controller
 //
+
 #if IS_TFTGLCD_PANEL
 
   #if ENABLED(TFTGLCD_PANEL_SPI)
@@ -428,9 +435,7 @@
    * orientation as the existing plug/DWIN to EXP1. TX/RX need to be connected to the TFT port, with TX->RX, RX->TX.
    */
 
-  #ifndef NO_CONTROLLER_CUSTOM_WIRING_WARNING
-    #error "CAUTION! Ender-3 V2 display requires a custom cable. See 'pins_BTT_OCTOPUS_V1_common.h' for details. (Define NO_CONTROLLER_CUSTOM_WIRING_WARNING to suppress this warning.)"
-  #endif
+  CONTROLLER_WARNING("BTT_OCTOPUS_V1_common", "Ender-3 V2 display")
 
   #define BEEPER_PIN                 EXP1_06_PIN
   #define BTN_EN1                    EXP1_08_PIN
@@ -494,7 +499,8 @@
     #endif
 
   #endif
-#endif  // HAS_WIRED_LCD
+
+#endif // HAS_WIRED_LCD
 
 // Alter timing for graphical display
 #if IS_U8GLIB_ST7920
@@ -524,8 +530,8 @@
 //
 // NeoPixel LED
 //
-#ifndef NEOPIXEL_PIN
-  #define NEOPIXEL_PIN                      PB0
+#ifndef BOARD_NEOPIXEL_PIN
+  #define BOARD_NEOPIXEL_PIN                PB0
 #endif
 
 #if ENABLED(WIFISUPPORT)

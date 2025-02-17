@@ -72,7 +72,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
     }
   #endif
 
-  #if ALL(FWRETRACT, FWRETRACT_AUTORETRACT)
+  #if BOTH(FWRETRACT, FWRETRACT_AUTORETRACT)
 
     if (MIN_AUTORETRACT <= MAX_AUTORETRACT) {
       // When M209 Autoretract is enabled, convert E-only moves to firmware retract/recover moves
@@ -91,7 +91,7 @@ void GcodeSuite::G0_G1(TERN_(HAS_FAST_MOVES, const bool fast_move/*=false*/)) {
 
   #endif // FWRETRACT
 
-  #if ANY(IS_SCARA, POLAR)
+  #if IS_SCARA
     fast_move ? prepare_fast_move_to_destination() : prepare_line_to_destination();
   #else
     prepare_line_to_destination();

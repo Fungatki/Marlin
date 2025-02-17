@@ -64,10 +64,10 @@
       if (parser.seenval('L')) {
         // Set volumetric limit (in mm^3/sec)
         const float lval = parser.value_float();
-        if (WITHIN(lval, 0, VOLUMETRIC_EXTRUDER_LIMIT_MAX))
+        if (WITHIN(lval, 0, 20))
           planner.set_volumetric_extruder_limit(target_extruder, lval);
         else
-          SERIAL_ECHOLNPGM("?L value out of range (0-" STRINGIFY(VOLUMETRIC_EXTRUDER_LIMIT_MAX) ").");
+          SERIAL_ECHOLNPGM("?L value out of range (0-20).");
       }
     #endif
 
@@ -297,9 +297,6 @@ void GcodeSuite::M205() {
   if (parser.seenval('S')) planner.settings.min_feedrate_mm_s = parser.value_linear_units();
   if (parser.seenval('T')) planner.settings.min_travel_feedrate_mm_s = parser.value_linear_units();
   #if HAS_JUNCTION_DEVIATION
-    #if HAS_CLASSIC_JERK && AXIS_COLLISION('J')
-      #error "Can't set_max_jerk for 'J' axis because 'J' is used for Junction Deviation."
-    #endif
     if (parser.seenval('J')) {
       const float junc_dev = parser.value_linear_units();
       if (WITHIN(junc_dev, 0.01f, 0.3f)) {
@@ -352,7 +349,7 @@ void GcodeSuite::M205_report(const bool forReplay/*=true*/) {
     #if HAS_JUNCTION_DEVIATION
       , PSTR(" J"), LINEAR_UNIT(planner.junction_deviation_mm)
     #endif
-    #if HAS_CLASSIC_JERK && NUM_AXES
+    #if HAS_CLASSIC_JERK
       , LIST_N(DOUBLE(NUM_AXES),
         SP_X_STR, LINEAR_UNIT(planner.max_jerk.x),
         SP_Y_STR, LINEAR_UNIT(planner.max_jerk.y),

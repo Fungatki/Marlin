@@ -336,7 +336,7 @@
   #include "../feature/encoder_i2c.h"
 #endif
 
-#if ANY(IS_SCARA, POLAR) || defined(G0_FEEDRATE)
+#if IS_SCARA || defined(G0_FEEDRATE)
   #define HAS_FAST_MOVES 1
 #endif
 
@@ -461,7 +461,7 @@ public:
      */
     enum MarlinBusyState : char {
       NOT_BUSY,           // Not in a handler
-      IN_HANDLER,         // Processing a GCode
+      IN_HANDLER,         // Processing a G-Code
       IN_PROCESS,         // Known to be blocking command input (as in G29)
       PAUSED_FOR_USER,    // Blocking pending any input
       PAUSED_FOR_INPUT    // Blocking pending text input (concept)
@@ -711,13 +711,6 @@ private:
   #endif
 
   static void M85();
-
-  #if ENABLED(HOTEND_IDLE_TIMEOUT)
-    static void M86();
-    static void M86_report(const bool forReplay=true);
-    static void M87();
-  #endif
-
   static void M92();
   static void M92_report(const bool forReplay=true, const int8_t e=-1);
 
@@ -727,6 +720,7 @@ private:
 
   #if ENABLED(BD_SENSOR)
     static void M102();
+    static void M102_report(const bool forReplay=true);
   #endif
 
   #if HAS_HOTEND
@@ -860,7 +854,7 @@ private:
   static void M205();
   static void M205_report(const bool forReplay=true);
 
-  #if HAS_HOME_OFFSET
+  #if HAS_M206_COMMAND
     static void M206();
     static void M206_report(const bool forReplay=true);
   #endif
@@ -936,10 +930,6 @@ private:
 
   #if ENABLED(BABYSTEPPING)
     static void M290();
-    #if ENABLED(EP_BABYSTEPPING)
-      static void M293();
-      static void M294();
-    #endif
   #endif
 
   #if HAS_SOUND
@@ -1043,7 +1033,7 @@ private:
     static void M425_report(const bool forReplay=true);
   #endif
 
-  #if HAS_HOME_OFFSET
+  #if HAS_M206_COMMAND
     static void M428();
   #endif
 
@@ -1053,11 +1043,6 @@ private:
 
   #if ENABLED(CANCEL_OBJECTS)
     static void M486();
-  #endif
-
-  #if ENABLED(FT_MOTION)
-    static void M493();
-    static void M493_report(const bool forReplay=true);
   #endif
 
   static void M500();
@@ -1217,10 +1202,6 @@ private:
     static void M928();
   #endif
 
-  #if ENABLED(OTA_FIRMWARE_UPDATE)
-    static void M936();
-  #endif
-
   #if ENABLED(MAGNETIC_PARKING_EXTRUDER)
     static void M951();
   #endif
@@ -1229,7 +1210,7 @@ private:
     static void M995();
   #endif
 
-  #if SPI_FLASH_BACKUP
+  #if ALL(SPI_FLASH, HAS_MEDIA)
     static void M993();
     static void M994();
   #endif
@@ -1255,7 +1236,7 @@ private:
     static void M1001();
   #endif
 
-  #if DGUS_LCD_UI_MKS
+  #if ENABLED(DGUS_LCD_UI_MKS)
     static void M1002();
   #endif
 

@@ -57,6 +57,30 @@
 #define E2_DIAG_PIN                         PF12  // PWRDET
 
 //
+// Z Probe (when not Z_MIN_PIN)
+//
+#ifndef Z_MIN_PROBE_PIN
+  #define Z_MIN_PROBE_PIN                   PB15
+#endif
+
+//
+// Check for additional used endstop pins
+//
+#if HAS_EXTRA_ENDSTOPS
+  #define _ENDSTOP_IS_ANY(ES) X2_USE_ENDSTOP == ES || Y2_USE_ENDSTOP == ES || Z2_USE_ENDSTOP == ES || Z3_USE_ENDSTOP == ES || Z4_USE_ENDSTOP == ES
+  #if _ENDSTOP_IS_ANY(_XMIN_) || _ENDSTOP_IS_ANY(_XMAX_)
+    #define NEEDS_X_MINMAX
+  #endif
+  #if _ENDSTOP_IS_ANY(_YMIN_) || _ENDSTOP_IS_ANY(_YMAX_)
+    #define NEEDS_Y_MINMAX
+  #endif
+  #if _ENDSTOP_IS_ANY(_ZMIN_) || _ENDSTOP_IS_ANY(_ZMAX_)
+    #define NEEDS_Z_MINMAX
+  #endif
+  #undef _ENDSTOP_IS_ANY
+#endif
+
+//
 // Limit Switches
 //
 #ifdef X_STALL_SENSITIVITY
@@ -66,7 +90,7 @@
   #else
     #define X_MIN_PIN                E0_DIAG_PIN  // M4-DET
   #endif
-#elif NEEDS_X_MINMAX
+#elif ANY(DUAL_X_CARRIAGE, NEEDS_X_MINMAX)
   #ifndef X_MIN_PIN
     #define X_MIN_PIN                 X_DIAG_PIN  // X-STOP
   #endif
@@ -84,7 +108,7 @@
   #else
     #define Y_MIN_PIN                E1_DIAG_PIN  // M5-DET
   #endif
-#elif NEEDS_Y_MINMAX
+#elif ENABLED(NEEDS_Y_MINMAX)
   #ifndef Y_MIN_PIN
     #define Y_MIN_PIN                 Y_DIAG_PIN  // Y-STOP
   #endif
@@ -102,7 +126,7 @@
   #else
     #define Z_MIN_PIN                E2_DIAG_PIN  // PWRDET
   #endif
-#elif NEEDS_Z_MINMAX
+#elif ENABLED(NEEDS_Z_MINMAX)
   #ifndef Z_MIN_PIN
     #define Z_MIN_PIN                 Z_DIAG_PIN  // Z-STOP
   #endif
@@ -118,6 +142,13 @@
 //
 #ifndef Z_MIN_PROBE_PIN
   #define Z_MIN_PROBE_PIN                   PB15
+#endif
+
+//
+// Probe enable
+//
+#if ENABLED(PROBE_ENABLE_DISABLE) && !defined(PROBE_ENABLE_PIN)
+  #define PROBE_ENABLE_PIN            SERVO0_PIN
 #endif
 
 //
@@ -294,34 +325,17 @@
   //#define E4_HARDWARE_SERIAL Serial1
 
   #define X_SERIAL_TX_PIN                   PG14
-  #define X_SERIAL_RX_PIN        X_SERIAL_TX_PIN
-
   #define Y_SERIAL_TX_PIN                   PG13
-  #define Y_SERIAL_RX_PIN        Y_SERIAL_TX_PIN
-
   #define Z_SERIAL_TX_PIN                   PG12
-  #define Z_SERIAL_RX_PIN        Z_SERIAL_TX_PIN
-
   #define Z2_SERIAL_TX_PIN                  PG11
-  #define Z2_SERIAL_RX_PIN      Z2_SERIAL_TX_PIN
-
   #define E0_SERIAL_TX_PIN                  PG10
-  #define E0_SERIAL_RX_PIN      E0_SERIAL_TX_PIN
-
   #define E1_SERIAL_TX_PIN                  PG9
-  #define E1_SERIAL_RX_PIN      E1_SERIAL_TX_PIN
-
   #define E2_SERIAL_TX_PIN                  PD7
-  #define E2_SERIAL_RX_PIN      E2_SERIAL_TX_PIN
-
   #define E3_SERIAL_TX_PIN                  PD6
-  #define E3_SERIAL_RX_PIN      E3_SERIAL_TX_PIN
-
   #define E4_SERIAL_TX_PIN                  PG8
-  #define E4_SERIAL_RX_PIN      E3_SERIAL_TX_PIN
-
+  #define E4_SERIAL_RX_PIN      E3_SERIAL_RX_PIN
   #define E5_SERIAL_TX_PIN                  PG7
-  #define E5_SERIAL_RX_PIN      E3_SERIAL_TX_PIN
+  #define E5_SERIAL_RX_PIN      E3_SERIAL_RX_PIN
 
   // Reduce baud rate to improve software serial reliability
   #ifndef TMC_BAUD_RATE
@@ -403,10 +417,10 @@
 #endif
 
 //
-// LCDs and Controllers
+// LCD / Controller
 //
 
-#if ENABLED(BTT_MINI_12864_V1)                    // BTT Mini 12864 V2.0 connected via 18-pin FCP cable
+#if ENABLED(BTT_MINI_12864)                       // BTT Mini 12864 V2.0 connected via 18-pin FPC cable
 
   #define BEEPER_PIN                 EXP1_01_PIN
   #define BTN_ENC                    EXP1_02_PIN
@@ -435,21 +449,21 @@
   #define NEOPIXEL_PIN               EXP1_06_PIN
 
 #elif HAS_WIRED_LCD
-  #error "Only BTT_MINI_12864_V1 is currently supported on the BIGTREE_OCTOPUS_MAX_EZ."
+  #error "Only BTT_MINI_12864 (BTT Mini 12864 V2.0 with FPC cable) is currently supported on the Octopus Max EZ."
 #endif
 
 //
 // NeoPixel LED
 //
-#ifndef NEOPIXEL_PIN
-  #define NEOPIXEL_PIN                      PE10
+#ifndef BOARD_NEOPIXEL_PIN
+  #define BOARD_NEOPIXEL_PIN                PE10
 #endif
 #ifndef NEOPIXEL2_PIN
   #define NEOPIXEL2_PIN                     PE9
 #endif
 
 //
-// WIFI
+// WiFi
 //
 #if ENABLED(WIFISUPPORT)
   /**
